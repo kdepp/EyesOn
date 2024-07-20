@@ -1,9 +1,9 @@
 var webpack = require('webpack')
 var path = require('path')
-var VueLoaderPlugin = require('vue-loader/lib/plugin')
 var CopyWebpackPlugin = require('copy-webpack-plugin')
 var { CleanWebpackPlugin } = require('clean-webpack-plugin')
 var ZipPlugin = require('zip-webpack-plugin')
+var VueLoaderPlugin = require('vue-loader/dist/plugin').default
 var HtmlWebpackPlugin = require('html-webpack-plugin')
 var HtmlWebpackIncludeSiblingChunksPlugin = require('html-webpack-include-sibling-chunks-plugin')
 var BrowserExtensionWebpackPlugin = require('./build/browser_extension_webpack_plugin')
@@ -31,7 +31,8 @@ module.exports = {
   entry: Object.assign(
     {
       popup: './src/extension/scripts/popup/popup.ts',
-      content_script: './src/extension/scripts/content_script/cs.ts',
+      content_script_main: './src/extension/scripts/content_script/cs_main.ts',
+      content_script_isolated: './src/extension/scripts/content_script/cs_isolated.ts',
       background: './src/extension/scripts/background/bg.ts'
     },
     !isSafari
@@ -55,7 +56,6 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.js', '.vue', '.json'],
     alias: {
-      vue$: 'vue/dist/vue.esm.js',
       '@': path.join(__dirname, 'src'),
       // '@safari': path.join(
       //   __dirname,
@@ -96,6 +96,10 @@ module.exports = {
           'postcss-loader',
           'sass-loader'
         ]
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader', 'postcss-loader']
       },
       {
         test: /\.(png|jpe?g|gif|svg)$/i,
@@ -182,7 +186,8 @@ module.exports = {
 
         manifestJson['version'] = packageJson['version']
         manifestJson['background']['scripts'] = getFilesForEntryPoint('background')
-        manifestJson['content_scripts'][0]['js'] = getFilesForEntryPoint('content_script')
+        manifestJson['content_scripts'][0]['js'] = getFilesForEntryPoint('content_script_main')
+        manifestJson['content_scripts'][1]['js'] = getFilesForEntryPoint('content_script_isolated')
 
         return manifestJson
       }

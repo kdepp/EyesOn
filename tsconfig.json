@@ -9,14 +9,12 @@
     "lib": ["es6", "es2015", "dom"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@safari": ["./src/safari/polyfill/safari_app_polyfill.ts"]
+      "@/*": ["src/*"]
     }
   },
   "include": [
-    "./src/**/*.ts",
-    "./src/**/*.tsx",
-    "./src/**/*.vue"
+    "src/**/*.ts",
+    "src/**/*.vue"
   ],
   "exclude": [
     "node_modules"
