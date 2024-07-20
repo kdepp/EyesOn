@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+
+  "name": "Eyes On Logs",
+  "description": "Keep an eye on console logs right on page",
+  "version": "0.1.0",
+  "author": "ohhandy.com",
+
+  "icons": {
+    "256": "logo.png"
+  },
+
+  "action": {
+    "default_icon": {
+      "38": "logo.png"
+    }
+  },
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["content_script.js"],
+    "run_at": "document_start"
+  }],
+
+  "web_accessible_resources": [
+    {
+      "resources": ["logo.png"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+
+  "offline_enabled": true,
+
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+
+  "host_permissions": [
+    "\u003Call_urls>"
+  ]
+}

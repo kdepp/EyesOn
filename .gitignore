@@ -1,0 +1,11 @@
+node_modules
+dist
+dist_*
+dist.*
+*.zip
+public/bundle.js
+*.xcbkptlist
+
+UserInterfaceState*
+src/safari/Assets/extension
+src/safari/Carthage
