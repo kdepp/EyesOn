@@ -30,7 +30,7 @@ export class ConsoleWrapper {
   private createStub(c: ConsoleAPI): ConsoleAPI {
     return consoleMethods.reduce((acc, method) => {
       acc[method] = (...args: any[]) => {
-        (c[method] as Function)(...args)
+        ;(c[method] as Function)(...args)
         this.registry.fire(this.eventName, { method, args })
       }
       return acc
@@ -39,8 +39,8 @@ export class ConsoleWrapper {
 }
 
 export type Invocation = {
-  method: keyof ConsoleAPI;
-  args: any[];
+  method: keyof ConsoleAPI
+  args: any[]
 }
 
 export type ConsoleAPI = Pick<

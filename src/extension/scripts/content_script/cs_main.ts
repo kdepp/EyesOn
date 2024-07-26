@@ -1,37 +1,20 @@
-import { ConsoleWrapper } from "@/services/console_wrapper"
-import Toastify from "toastify-js"
+import { reactive, toRef } from "vue"
+import { ConsoleWrapper, Invocation } from "@/services/console_wrapper"
 import { renderUI } from "./ui"
 
 init()
 
 function init() {
   const csw = new ConsoleWrapper(self).turnOn()
+  const cache = reactive({
+    logs: toRef([] as Invocation[]),
+  })
 
   csw.listen((inv) => {
-    if (inv.method === "log") {
-      Toastify({
-        text: inv.method,
-        duration: -1,
-        close: true,
-        gravity: "bottom",
-      }).showToast()
-    }
-    // Toastify({
-    //   text: "This is a toast for " + inv.method,
-    //   duration: 3000,
-    //   destination: "https://github.com/apvarun/toastify-js",
-    //   newWindow: true,
-    //   close: true,
-    //   gravity: "top", // `top` or `bottom`
-    //   position: "left", // `left`, `center` or `right`
-    //   stopOnFocus: true, // Prevents dismissing of toast on hover
-    //   style: {
-    //     background: "linear-gradient(to right, #00b09b, #96c93d)",
-    //   },
-    // }).showToast()
+    cache.logs.push(inv)
   })
 
   setTimeout(() => {
-    renderUI()
-  }, 1000)
+    renderUI(cache.logs)
+  }, 500)
 }

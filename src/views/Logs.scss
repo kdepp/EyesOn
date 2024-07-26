@@ -1,4 +1,16 @@
 .logs-container {
   background: yellow;
   font-weight: bold;
+
+  .log-list {
+    display: flex;
+    flex-direction: column;
+
+    .log {
+      padding: 0.6em;
+      margin: 0.4em 0;
+      background: lightblue;
+      border: 1px solid lightseagreen;
+    }
+  }
 }
