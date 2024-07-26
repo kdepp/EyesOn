@@ -175,7 +175,10 @@ module.exports = {
       'process.env': {
         NODE_ENV: '"development"'
       },
-      __development__: process.env.NODE_ENV === 'production' ? 'false' : 'true'
+      __development__: process.env.NODE_ENV === 'production' ? 'false' : 'true',
+      __VUE_OPTIONS_API__: 'false',
+      __VUE_PROD_DEVTOOLS__: 'false',
+      __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: 'false'
     }),
     new BrowserExtensionWebpackPlugin({
       createManifestJson: ({ getFilesForEntryPoint }) => {
