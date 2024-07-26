@@ -1,8 +1,8 @@
 import { ConsoleWrapper } from "@/services/console_wrapper"
 import Toastify from "toastify-js"
-import { renderUI } from "./ui";
+import { renderUI } from "./ui"
 
-init();
+init()
 
 function init() {
   const csw = new ConsoleWrapper(self).turnOn()
