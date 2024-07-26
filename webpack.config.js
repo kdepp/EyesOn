@@ -27,6 +27,14 @@ var distDir = (function () {
   }
 })()
 
+const styleLoader = {
+  loader: "style-loader",
+  options: {
+    injectType: "lazyStyleTag",
+    insert: require.resolve("./build/custom_style_insert"),
+  },
+}
+
 module.exports = {
   entry: Object.assign(
     {
@@ -84,14 +92,7 @@ module.exports = {
       {
         test: /\.scss$/,
         use: [
-          {
-            loader: 'style-loader',
-            options: {
-              // Temp fix for safari, as Safari extension loads content scripts before document.head/body
-              // is ready, which breaks style-loader to insert styles
-              insert: isSafari ? 'html' : 'head'
-            }
-          },
+          styleLoader,
           'css-loader',
           'postcss-loader',
           'sass-loader'
@@ -99,7 +100,7 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader', 'postcss-loader']
+        use: [styleLoader, 'css-loader', 'postcss-loader']
       },
       {
         test: /\.(png|jpe?g|gif|svg)$/i,
