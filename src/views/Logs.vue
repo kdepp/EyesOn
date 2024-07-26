@@ -1,9 +1,14 @@
 <template>
   <div class="logs-container">
     <h3>Logs</h3>
-    <div class="log-list">
-      <div v-for="(item, i) in logs" :key="`${i}`" class="log">
-        {{ JSON.stringify(item) }}
+    <div class="entry-list">
+      <div
+        v-for="(item, i) in logs"
+        :key="`${i}`"
+        :class="item.method"
+        class="entry"
+      >
+        {{ renderLog(item) }}
       </div>
     </div>
   </div>
@@ -27,6 +32,18 @@ export default defineComponent({
     onBeforeMount(() => {
       getStyleInjector().injectStyles(styles)
     })
+
+    function renderLog(inv: Invocation): string {
+      return inv.args.map(renderData).join(" ")
+    }
+
+    function renderData(data: any): string {
+      return "" + data
+    }
+
+    return {
+      renderLog,
+    }
   },
 })
 </script>

@@ -1,16 +1,42 @@
 .logs-container {
-  background: yellow;
-  font-weight: bold;
+  margin-right: 1em;
 
-  .log-list {
+  .entry-list {
     display: flex;
     flex-direction: column;
 
-    .log {
-      padding: 0.6em;
+    .entry {
+      padding: 0.8em;
       margin: 0.4em 0;
       background: lightblue;
-      border: 1px solid lightseagreen;
+      border: 2px solid lightseagreen;
+      border-radius: 10px;
+      color: #fefefe;
+
+      $log-color: #0087BD;
+      $warn-color: #FFA500;
+      $error-color: #C40233;
+      $debug-color: #969696;
+
+      &.log, &.info {
+        background: $log-color;
+        border-color: darken($log-color, 10%);
+      }
+
+      &.warn {
+        background: $warn-color;
+        border-color: darken($warn-color, 10%);
+      }
+
+      &.error {
+        background: $error-color;
+        border-color: darken($error-color, 10%);
+      }
+
+      &.debug {
+        background: $debug-color;
+        border-color: darken($debug-color, 10%);
+      }
     }
   }
 }

@@ -50,4 +50,10 @@ table {
   font-size: 14px !important;
   font-weight: normal !important;
   font-family: Arial, Helvetica, sans-serif !important;
+  line-height: 1.3em !important;
+
+  * {
+    font-smoothing: never !important;
+    -webkit-font-smoothing: never !important;
+  }
 }
