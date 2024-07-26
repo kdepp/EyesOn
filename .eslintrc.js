@@ -19,7 +19,6 @@ module.exports = {
   ],
   rules: {
     "prettier/prettier": "warn",
-    'comma-dangle': ['error', 'never'],
     'semi': 'off',
     'no-multi-spaces': 'off',
     'indent': 'off',
