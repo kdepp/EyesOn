@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/blueimp-md5": "^2.7.0",
+    "@types/chrome": "^0.0.269",
     "@types/toastify-js": "^1.12.3",
     "axios": "^0.21.1",
     "blueimp-md5": "^2.18.0",
