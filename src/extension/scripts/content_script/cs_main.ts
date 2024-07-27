@@ -2,6 +2,7 @@ import { ConsoleWrapper, Invocation } from "@/services/console_wrapper"
 import { renderUI } from "./ui"
 import { Action, AssertMessage } from "../common/types"
 import { State, initState } from "./state"
+import { isDev } from "@/common/env"
 
 init()
 
@@ -23,7 +24,22 @@ function initConsoleWrapper(entries: Invocation[]) {
   const csw = new ConsoleWrapper(self as any).turnOn()
 
   csw.listen((inv) => {
-    entries.push(inv)
+    switch (inv.method) {
+      case "log":
+      case "info":
+      case "debug":
+      case "warn":
+      case "error":
+        entries.push(inv)
+        break
+
+      default:
+        if (isDev) {
+          csw.original.debug(`ConsoleWrapper: Method ${inv.method} is discarded for now`, inv)
+        }
+
+        break
+    }
   })
 }
 

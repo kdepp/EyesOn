@@ -6,7 +6,8 @@
     flex-direction: column;
 
     .entry {
-      padding: 0.8em;
+      position: relative;
+      padding: 0.8em 1.4em 0.8em 0.8em;
       margin: 0.4em 0;
       background: lightblue;
       border: 2px solid lightseagreen;
@@ -36,6 +37,12 @@
       &.debug {
         background: $debug-color;
         border-color: darken($debug-color, 10%);
+      }
+
+      .remove-btn {
+        position: absolute;
+        top: 0.4em;
+        right: 0.4em;
       }
     }
   }

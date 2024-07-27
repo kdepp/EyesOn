@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid"
 import { createListenerRegistry } from "@/common/registry"
 
 export class ConsoleWrapper {
@@ -28,10 +29,14 @@ export class ConsoleWrapper {
   }
 
   private createStub(c: ConsoleAPI): ConsoleAPI {
-    return consoleMethods.reduce((acc, method) => {
+    return [...consoleMethods, ...nonStandardMethods].reduce((acc, method) => {
       acc[method] = (...args: any[]) => {
         ;(c[method] as Function)(...args)
-        this.registry.fire(this.eventName, { method, args })
+        this.registry.fire(this.eventName, {
+          args,
+          id: nanoid(),
+          method: method as any,
+        })
       }
       return acc
     }, {}) as any as ConsoleAPI
@@ -39,6 +44,7 @@ export class ConsoleWrapper {
 }
 
 export type Invocation = {
+  id: string
   method: keyof ConsoleAPI
   args: any[]
 }
@@ -48,14 +54,16 @@ export type ConsoleAPI = Pick<
   "assert" | "clear" | "count" | "countReset" |
   "debug" | "dir" | "dirxml" | "error" |
   "group" | "groupCollapsed" | "groupEnd" | "info" |
-  "log" |  "table" |
-  "trace" | "warn"
+  "log" |  "table" | "time" | "timeEnd" | "timeLog" | "timeStamp" |
+  "trace" | "warn" // | "profile" | "profileEnd"
 >
 
 const consoleMethods: Array<keyof ConsoleAPI> = [
   "assert", "clear", "count", "countReset",
   "debug", "dir", "dirxml", "error",
   "group", "groupCollapsed", "groupEnd", "info",
-  "log", "table",
+  "log", "table", "time", "timeEnd", "timeLog", "timeStamp",
   "trace", "warn",
 ]
+
+const nonStandardMethods: string[] = ["profile", "profileEnd"]
