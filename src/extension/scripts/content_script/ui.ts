@@ -1,11 +1,18 @@
-import { createApp } from "vue"
+import { createApp, h } from "vue"
 import LogsView from "@/views/Logs.vue"
 import { getStyleInjector } from "@/services/style_injector"
-import { Invocation } from "@/services/console_wrapper"
 import resetStyles from "./reset_styles.scss"
+import { State } from "./state"
 
-export function renderUI(logs: Invocation[]) {
-  const app = createApp(LogsView, { logs })
+export function renderUI(state: State) {
+  // IMPORTANT: must wrap LogsView in this new component to keep the fields in state reactive
+  const app = createApp({
+    render: () =>
+      h(LogsView, {
+        entries: state.entries,
+        enabled: state.enabled,
+      }),
+  })
   const { shadowRoot, innerRoot } = createRoot()
 
   getStyleInjector().setRoot(shadowRoot as any)

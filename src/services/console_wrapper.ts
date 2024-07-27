@@ -48,8 +48,7 @@ export type ConsoleAPI = Pick<
   "assert" | "clear" | "count" | "countReset" |
   "debug" | "dir" | "dirxml" | "error" |
   "group" | "groupCollapsed" | "groupEnd" | "info" |
-  "log" | "profile" | "profileEnd" | "table" |
-  "time" | "timeEnd" | "timeLog" | "timeStamp" |
+  "log" |  "table" |
   "trace" | "warn"
 >
 
@@ -57,7 +56,6 @@ const consoleMethods: Array<keyof ConsoleAPI> = [
   "assert", "clear", "count", "countReset",
   "debug", "dir", "dirxml", "error",
   "group", "groupCollapsed", "groupEnd", "info",
-  "log", "profile", "profileEnd", "table",
-  "time", "timeEnd", "timeLog", "timeStamp",
+  "log", "table",
   "trace", "warn",
 ]

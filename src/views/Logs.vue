@@ -1,9 +1,12 @@
 <template>
-  <div class="logs-container">
+  <div
+    v-if="enabled"
+    class="logs-container"
+  >
     <h3>Logs</h3>
     <div class="entry-list">
       <div
-        v-for="(item, i) in logs"
+        v-for="(item, i) in entries"
         :key="`${i}`"
         :class="item.method"
         class="entry"
@@ -23,12 +26,16 @@ import styles from "./Logs.scss"
 export default defineComponent({
   name: "LogsView",
   props: {
-    logs: {
+    entries: {
       type: Object as PropType<Invocation[]>,
       required: true,
     },
+    enabled: {
+      type: Boolean,
+      default: false,
+    },
   },
-  setup(props) {
+  setup() {
     onBeforeMount(() => {
       getStyleInjector().injectStyles(styles)
     })
