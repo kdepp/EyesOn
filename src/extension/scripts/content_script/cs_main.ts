@@ -1,8 +1,11 @@
-import { ConsoleWrapper, Invocation } from "@/services/console_wrapper"
+import { ConsoleWrapper } from "@/services/console_wrapper"
 import { renderUI } from "./ui"
 import { Action, AssertMessage } from "../common/types"
 import { State, initState } from "./state"
 import { isDev } from "@/common/env"
+import type { Invocation } from "@/services/types"
+import { FetchWrapper } from "@/services/fetch_wrapper"
+import { nanoid } from "nanoid"
 
 init()
 
@@ -10,8 +13,10 @@ function init() {
   const state = initState()
 
   bindTunnelMessage(state)
-  initConsoleWrapper(state.entries)
   initUI(state)
+
+  const console = initConsoleWrapper(state.entries)
+  initHttpWrapper(state.entries, console.original as any)
 }
 
 function initUI(state: State) {
@@ -20,7 +25,7 @@ function initUI(state: State) {
   }, 500)
 }
 
-function initConsoleWrapper(entries: Invocation[]) {
+function initConsoleWrapper(entries: Invocation[]): ConsoleWrapper {
   const csw = new ConsoleWrapper(self as any).turnOn()
 
   csw.listen((inv) => {
@@ -39,6 +44,31 @@ function initConsoleWrapper(entries: Invocation[]) {
         }
 
         break
+    }
+  })
+
+  return csw
+}
+
+function initHttpWrapper(entries: Invocation[], console: typeof window.console) {
+  initFetchWrapper(entries, console)
+}
+
+function initFetchWrapper(entries: Invocation[], console: typeof window.console) {
+  const fw = new FetchWrapper(self).turnOn()
+
+  fw.listen((inv) => {
+    if (isDev) {
+      console.debug("FetchWrapper: Invocation", inv)
+    }
+
+    const index = entries.findIndex((entry) => entry.id === inv.id)
+
+    if (index === -1) {
+      entries.push(inv)
+    } else {
+      // update id to force repaint in list UI
+      entries.splice(index, 1, { ...inv, id: nanoid() })
     }
   })
 }

@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid"
 import { createListenerRegistry } from "@/common/registry"
+import type { ConsoleAPI, Invocation } from "./types"
 
 export class ConsoleWrapper {
   private registry = createListenerRegistry<Invocation>()
@@ -43,20 +44,7 @@ export class ConsoleWrapper {
   }
 }
 
-export type Invocation = {
-  id: string
-  method: keyof ConsoleAPI
-  args: any[]
-}
 
-export type ConsoleAPI = Pick<
-  Console,
-  "assert" | "clear" | "count" | "countReset" |
-  "debug" | "dir" | "dirxml" | "error" |
-  "group" | "groupCollapsed" | "groupEnd" | "info" |
-  "log" |  "table" | "time" | "timeEnd" | "timeLog" | "timeStamp" |
-  "trace" | "warn" // | "profile" | "profileEnd"
->
 
 const consoleMethods: Array<keyof ConsoleAPI> = [
   "assert", "clear", "count", "countReset",

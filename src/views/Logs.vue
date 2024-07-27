@@ -6,7 +6,7 @@
     <h3>Logs</h3>
     <div class="entry-list">
       <div
-        v-for="(item, i) in visibleEntries"
+        v-for="item in visibleEntries"
         :key="item.id"
         :class="item.method"
         class="entry"
@@ -26,9 +26,9 @@
 <script lang="ts">
 import { computed, defineComponent, onBeforeMount, PropType, reactive } from "vue"
 import { getStyleInjector } from "@/services/style_injector"
-import { Invocation } from "@/services/console_wrapper"
 import MultiplyIcon from "@/components/icons/Multiply.vue"
 import styles from "./Logs.scss"
+import type { Invocation, RequestKeyInfo, ResponseKeyInfo } from "@/services/types"
 
 export default defineComponent({
   name: "LogsView",
@@ -59,7 +59,26 @@ export default defineComponent({
     })
 
     function renderEntry(inv: Invocation): string {
-      return inv.args.map(renderData).join(" ")
+      switch (inv.method) {
+        case "fetch":
+        case "xhr":
+          return renderRequestEntry(inv.args)
+
+        default:
+          return inv.args.map(renderData).join(" ")
+      }
+    }
+
+    function renderRequestEntry(args: any[]): string {
+      const request = args[0]?.request as RequestKeyInfo
+      const response = args[1]?.response as ResponseKeyInfo | undefined
+      let text = `${request.method.toUpperCase()} ${request.url}`
+
+      if (response) {
+        text += ` - ${response.code}`
+      }
+
+      return text
     }
 
     function renderData(data: any): string {

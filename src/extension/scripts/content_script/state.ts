@@ -1,4 +1,4 @@
-import { Invocation } from "@/services/console_wrapper"
+import type { Invocation } from "@/services/types"
 import { reactive } from "vue"
 
 export function initState() {
