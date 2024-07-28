@@ -17,6 +17,7 @@ export type RequestKeyInfo = {
   url: string
   method: string
   headers: Record<string, string>
+  // TODO: payload
 }
 
 export type ResponseKeyInfo = {

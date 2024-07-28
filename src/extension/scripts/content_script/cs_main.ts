@@ -6,6 +6,7 @@ import { isDev } from "@/common/env"
 import type { Invocation } from "@/services/types"
 import { FetchWrapper } from "@/services/fetch_wrapper"
 import { nanoid } from "nanoid"
+import { XMLHttpRequestWrapper } from "@/services/xhr_wrapper"
 
 init()
 
@@ -52,6 +53,7 @@ function initConsoleWrapper(entries: Invocation[]): ConsoleWrapper {
 
 function initHttpWrapper(entries: Invocation[], console: typeof window.console) {
   initFetchWrapper(entries, console)
+  initXHRWrapper(entries, console)
 }
 
 function initFetchWrapper(entries: Invocation[], console: typeof window.console) {
@@ -60,6 +62,25 @@ function initFetchWrapper(entries: Invocation[], console: typeof window.console)
   fw.listen((inv) => {
     if (isDev) {
       console.debug("FetchWrapper: Invocation", inv)
+    }
+
+    const index = entries.findIndex((entry) => entry.id === inv.id)
+
+    if (index === -1) {
+      entries.push(inv)
+    } else {
+      // update id to force repaint in list UI
+      entries.splice(index, 1, { ...inv, id: nanoid() })
+    }
+  })
+}
+
+function initXHRWrapper(entries: Invocation[], console: typeof window.console) {
+  const wrapper = new XMLHttpRequestWrapper(self).turnOn()
+
+  wrapper.listen((inv) => {
+    if (isDev) {
+      console.debug("XMLHttpRequestWrapper: Invocation", inv)
     }
 
     const index = entries.findIndex((entry) => entry.id === inv.id)

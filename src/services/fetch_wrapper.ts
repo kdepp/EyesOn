@@ -27,6 +27,7 @@ export class FetchWrapper {
   public listen(fn: (inv: Invocation) => void) {
     this.registry.add(this.eventName, fn)
   }
+
   private createStub(f: FetchFunc): FetchFunc {
     const stub: FetchFunc = (...args) => {
       const inv: Invocation = {
