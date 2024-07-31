@@ -15,11 +15,14 @@ export type Invocation = {
 
 export type RequestPayload =
   | string
+  | Document
   | Blob
   | DataView
   | File
   | FormData
   | URLSearchParams
+  | ArrayBuffer
+  | ArrayBufferView
   | ReadableStream<Uint8Array>
 
 export type RequestKeyInfo = {

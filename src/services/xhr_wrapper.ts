@@ -127,8 +127,12 @@ export class XMLHttpRequestWrapper {
     const self = this
     const stub: SendFunc = function (...args) {
       const xhrData = self.getXHRData(this)
-      // const body = args[0]
-      // TODO: set request body
+      const body = args[0]
+
+      if (!!xhrData.request && body) {
+        xhrData.request.payload = body
+      }
+
       const inv: Invocation = {
         id: xhrData.id,
         method: "xhr",
@@ -187,13 +191,10 @@ export class XMLHttpRequestWrapper {
   }
 
   private extractResponseBody(xhr: XMLHttpRequest): ResponseContent {
+    console.log("body", xhr.response)
+
     switch (xhr.responseType) {
       case "text":
-      case "":
-        return {
-          type: ResponseType.Text,
-          value: xhr.responseText,
-        }
 
       case "document":
         return {
@@ -216,6 +217,46 @@ export class XMLHttpRequestWrapper {
       case "arraybuffer":
         return {
           type: ResponseType.ArrayBuffer,
+          value: xhr.response,
+        }
+
+      case "":
+        const ct = (xhr.getResponseHeader("Content-Type") ?? "").toLowerCase()
+
+        if (/application\/json/.test(ct) || /application\/vnd\.api\+json/.test(ct)) {
+          try {
+            const json = JSON.parse(xhr.response)
+
+            return {
+              type: ResponseType.JSON,
+              value: json,
+            }
+          } catch (e) {
+            return {
+              type: ResponseType.Text,
+              value: xhr.response,
+            }
+          }
+        }
+
+        if (/^text\//.test(ct)) {
+          return {
+            type: ResponseType.Text,
+            value: xhr.response,
+          }
+        }
+
+        if (/^image\//.test(ct)) {
+          const blob = xhr.response
+
+          return {
+            type: ResponseType.Image,
+            value: URL.createObjectURL(blob),
+          }
+        }
+
+        return {
+          type: ResponseType.Blob,
           value: xhr.response,
         }
 
