@@ -56,7 +56,13 @@ module.exports = {
   optimization: {
     splitChunks: {
       // Just to make it easy for safari extension so that we don't have change Info.plist
-      chunks: (chunk) => (!isSafari ? true : chunk.name !== 'content_script'),
+      chunks: (chunk) => {
+        if (chunk.name === 'background') {
+          return false
+        }
+
+        return (!isSafari ? true : chunk.name !== 'content_script')
+      },
       automaticNameDelimiter: '_',
       maxSize: 1e6
     }

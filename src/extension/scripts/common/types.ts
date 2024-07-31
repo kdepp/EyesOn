@@ -1,6 +1,7 @@
 export enum Action {
   Toggle = "toggle",
   Tunnel = "tunnel",
+  CheckSiteOption = "check_page_enabled",
 }
 
 export type Message = {

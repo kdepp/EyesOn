@@ -28,7 +28,7 @@
   },{
     "matches": ["<all_urls>"],
     "js": ["content_script_isolated.js"],
-    "run_at": "document_start",
+    "run_at": "document_end",
     "world": "ISOLATED"
   }],
 

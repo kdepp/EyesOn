@@ -5,6 +5,7 @@ export function initState() {
   return reactive({
     entries: [] as Invocation[],
     enabled: true,
+    initialized: false,
   })
 }
 

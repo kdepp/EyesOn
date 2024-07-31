@@ -105,8 +105,6 @@ export class XMLHttpRequestWrapper {
   }
 
   private parseHeadersString(headers: string): Record<string, string> {
-    console.log("parseHeadersString", headers)
-
     const dict: Record<string, string> = {}
     const lines = headers.trim().split(/[\r\n]+/g)
 
@@ -191,8 +189,6 @@ export class XMLHttpRequestWrapper {
   }
 
   private extractResponseBody(xhr: XMLHttpRequest): ResponseContent {
-    console.log("body", xhr.response)
-
     switch (xhr.responseType) {
       case "text":
 

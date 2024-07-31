@@ -7,23 +7,30 @@ import type { Invocation } from "@/services/types"
 import { FetchWrapper } from "@/services/fetch_wrapper"
 import { nanoid } from "nanoid"
 import { XMLHttpRequestWrapper } from "@/services/xhr_wrapper"
+import { AppMode } from "@/extension/services/site_options_storage"
 
 init()
 
 function init() {
   const state = initState()
-
   bindTunnelMessage(state)
-  initUI(state)
+}
 
-  const console = initConsoleWrapper(state.entries)
-  initHttpWrapper(state.entries, console.original as any)
+function initApp(state: State) {
+  initUI(state)
+  initWrappers(state)
 }
 
 function initUI(state: State) {
   setTimeout(() => {
     renderUI(state)
+    state.initialized = true
   }, 500)
+}
+
+function initWrappers(state: State) {
+  const console = initConsoleWrapper(state.entries)
+  initHttpWrapper(state.entries, console.original as any)
 }
 
 function initConsoleWrapper(entries: Invocation[]): ConsoleWrapper {
@@ -110,7 +117,13 @@ function bindTunnelMessage(state: State) {
 
     switch (innerMsg.action) {
       case Action.Toggle:
-        state.enabled = !state.enabled
+        // TODO: Pass other fields in innerMsg.payload (type: SiteOption) to UI
+        state.enabled = innerMsg.payload?.mode === AppMode.Dev
+
+        if (state.enabled && !state.initialized) {
+          initApp(state)
+        }
+
         break
 
       case Action.Tunnel:
