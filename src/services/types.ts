@@ -40,6 +40,8 @@ export enum ResponseType {
   Text = "text",
   Image = "image",
   Blob = "blob",
+  ArrayBuffer = "arraybuffer",
+  Document = "document",
 }
 
 export type ResponseContent<T = any> = {
@@ -51,5 +53,7 @@ export type ResponseContentTypes = {
   [ResponseType.JSON]: any
   [ResponseType.Text]: string
   [ResponseType.Image]: string
+  [ResponseType.ArrayBuffer]: ArrayBuffer
   [ResponseType.Blob]: Blob
+  [ResponseType.Document]: Document
 }

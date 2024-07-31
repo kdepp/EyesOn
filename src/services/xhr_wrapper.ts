@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid"
 import { createListenerRegistry } from "@/common/registry"
-import type { Invocation, RequestKeyInfo, ResponseKeyInfo } from "./types"
+import type { Invocation, RequestKeyInfo, ResponseContent, ResponseKeyInfo } from "./types"
 import { ResponseType } from "./types"
 
 type XHR = typeof window.XMLHttpRequest
@@ -85,10 +85,7 @@ export class XMLHttpRequestWrapper {
       const respInfo: ResponseKeyInfo = {
         code: xhr.status,
         headers: this.parseHeadersString(xhr.getAllResponseHeaders()),
-        body: {
-          type: ResponseType.Text,
-          value: "", // TODO: fix body
-        },
+        body: this.extractResponseBody(xhr),
       }
 
       xhrData.response = respInfo
@@ -108,8 +105,10 @@ export class XMLHttpRequestWrapper {
   }
 
   private parseHeadersString(headers: string): Record<string, string> {
+    console.log("parseHeadersString", headers)
+
     const dict: Record<string, string> = {}
-    const lines = headers.trim().split(/[\r\n]+/)
+    const lines = headers.trim().split(/[\r\n]+/g)
 
     for (const line of lines) {
       const parts = line.split(": ")
@@ -124,7 +123,7 @@ export class XMLHttpRequestWrapper {
     return dict
   }
 
-  private createStubForSend(f: OpenFunc): SendFunc {
+  private createStubForSend(f: SendFunc): SendFunc {
     const self = this
     const stub: SendFunc = function (...args) {
       const xhrData = self.getXHRData(this)
@@ -148,7 +147,7 @@ export class XMLHttpRequestWrapper {
     return stub
   }
 
-  private createStubForSetRequestHeader(f: OpenFunc): SetRequestHeaderFunc {
+  private createStubForSetRequestHeader(f: SetRequestHeaderFunc): SetRequestHeaderFunc {
     const self = this
     const stub: SetRequestHeaderFunc = function (...args) {
       const key = "" + args[0]
@@ -185,6 +184,44 @@ export class XMLHttpRequestWrapper {
     }
 
     return data
+  }
+
+  private extractResponseBody(xhr: XMLHttpRequest): ResponseContent {
+    switch (xhr.responseType) {
+      case "text":
+      case "":
+        return {
+          type: ResponseType.Text,
+          value: xhr.responseText,
+        }
+
+      case "document":
+        return {
+          type: ResponseType.Document,
+          value: xhr.responseXML,
+        }
+
+      case "json":
+        return {
+          type: ResponseType.JSON,
+          value: xhr.response,
+        }
+
+      case "blob":
+        return {
+          type: ResponseType.Blob,
+          value: xhr.response,
+        }
+
+      case "arraybuffer":
+        return {
+          type: ResponseType.ArrayBuffer,
+          value: xhr.response,
+        }
+
+      default:
+        throw new Error(`unknown responseType: ${xhr.responseType}`)
+    }
   }
 }
 
