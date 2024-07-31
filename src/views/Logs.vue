@@ -3,7 +3,6 @@
     v-if="enabled"
     class="logs-container"
   >
-    <h3>Logs</h3>
     <div class="entry-list">
       <div
         v-for="item in visibleEntries"
@@ -27,6 +26,7 @@
         :class="{ disabled: !filter.enabled, [filter.name]: true }"
         class="entry-filter"
         @click="toggleFilter(filter.name)"
+        @dblclick="enableFilterOnly(filter.name)"
       >
         {{ filter.name }} ({{ filter.count }})
       </div>
@@ -71,8 +71,10 @@ export default defineComponent({
   },
   setup(props) {
     const filterGroups: FilterGroup[] = [
-      "log",
-      "info",
+      {
+        name: "log",
+        filters: ["log", "info"],
+      },
       "debug",
       "warn",
       "error",
@@ -163,6 +165,12 @@ export default defineComponent({
       state.filterToggles[name] = !state.filterToggles[name]
     }
 
+    function enableFilterOnly(name: string): void {
+      for (const groupName in state.filterToggles) {
+        state.filterToggles[groupName] = groupName === name
+      }
+    }
+
     function getFilterGroupName(method: string): string | null {
       for (const group of filterGroups) {
         if (typeof group === "string") {
@@ -185,6 +193,7 @@ export default defineComponent({
       renderEntry,
       removeEntry,
       toggleFilter,
+      enableFilterOnly,
     }
   },
 })

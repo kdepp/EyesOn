@@ -14,6 +14,9 @@ $darken-amount: 10%;
   .entry-list {
     display: flex;
     flex-direction: column;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 1em 0;
 
     .entry {
       position: relative;
