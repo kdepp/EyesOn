@@ -13,11 +13,20 @@ export type Invocation = {
   args: any[]
 }
 
+export type RequestPayload =
+  | string
+  | Blob
+  | DataView
+  | File
+  | FormData
+  | URLSearchParams
+  | ReadableStream<Uint8Array>
+
 export type RequestKeyInfo = {
   url: string
   method: string
   headers: Record<string, string>
-  // TODO: payload
+  payload?: RequestPayload
 }
 
 export type ResponseKeyInfo = {

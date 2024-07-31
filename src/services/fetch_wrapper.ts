@@ -1,6 +1,12 @@
 import { nanoid } from "nanoid"
 import { createListenerRegistry } from "@/common/registry"
-import type { Invocation, RequestKeyInfo, ResponseContent, ResponseKeyInfo } from "./types"
+import type {
+  Invocation,
+  RequestKeyInfo,
+  RequestPayload,
+  ResponseContent,
+  ResponseKeyInfo,
+} from "./types"
 import { ResponseType } from "./types"
 
 type FetchFunc = typeof window.fetch
@@ -82,9 +88,15 @@ export class FetchWrapper {
     }
 
     if (!!p1 && typeof (p1 as Request).headers === "object") {
-      info.headers = (p1 as Request).headers as any
+      info.headers = this.extractHeaders((p1 as Request).headers as any)
     } else if (!!p2 && typeof (p2 as RequestInit).headers === "object") {
-      info.headers = (p2 as RequestInit).headers as any
+      info.headers = this.extractHeaders((p2 as RequestInit).headers as any)
+    }
+
+    if (!!p1 && typeof (p1 as Request).body !== undefined) {
+      info.payload = (p1 as Request).body as RequestPayload
+    } else if (!!p2 && typeof (p2 as Request).body !== undefined) {
+      info.payload = (p2 as Request).body as RequestPayload
     }
 
     return info
@@ -96,14 +108,18 @@ export class FetchWrapper {
     return {
       body,
       code: resp.status,
-      headers: this.extractHeaders(resp),
+      headers: this.extractHeaders(resp.headers),
     }
   }
 
-  private extractHeaders(resp: Response): Record<string, string> {
+  private extractHeaders(headers: Headers | Record<string, string>): Record<string, string> {
+    if (!(headers instanceof Headers)) {
+      return headers
+    }
+
     const obj: Record<string, string> = {}
 
-    resp.headers.forEach((v, k) => {
+    headers.forEach((v, k) => {
       obj[k] = v
     })
 
@@ -113,7 +129,7 @@ export class FetchWrapper {
   private async extractBody(resp: Response): Promise<ResponseContent> {
     const ct = (resp.headers.get("Content-Type") ?? "").toLowerCase()
 
-    if (ct === "application/json" || ct === "application/vnd.api+json") {
+    if (/application\/json/.test(ct) || /application\/vnd\.api\+json/.test(ct)) {
       const json = await resp.json()
 
       return {
