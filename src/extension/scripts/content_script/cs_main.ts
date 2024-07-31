@@ -61,7 +61,7 @@ function initFetchWrapper(entries: Invocation[], console: typeof window.console)
 
   fw.listen((inv) => {
     if (isDev) {
-      console.debug("FetchWrapper: Invocation", inv)
+      console.debug("FetchWrapper: Invocation", inv, inv.args[0].request.url)
     }
 
     const index = entries.findIndex((entry) => entry.id === inv.id)
@@ -80,7 +80,7 @@ function initXHRWrapper(entries: Invocation[], console: typeof window.console) {
 
   wrapper.listen((inv) => {
     if (isDev) {
-      console.debug("XMLHttpRequestWrapper: Invocation", inv)
+      console.debug("XMLHttpRequestWrapper: Invocation", inv, inv.args[0].request.url)
     }
 
     const index = entries.findIndex((entry) => entry.id === inv.id)
