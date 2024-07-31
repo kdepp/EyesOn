@@ -20,15 +20,39 @@
         />
       </div>
     </div>
+    <div class="entry-filter-list">
+      <div
+        v-for="filter in filters"
+        :key="filter.name"
+        :class="{ disabled: !filter.enabled, [filter.name]: true }"
+        class="entry-filter"
+        @click="toggleFilter(filter.name)"
+      >
+        {{ filter.name }} ({{ filter.count }})
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent, onBeforeMount, PropType, reactive } from "vue"
 import { getStyleInjector } from "@/services/style_injector"
+import type { Invocation, RequestKeyInfo, ResponseKeyInfo } from "@/services/types"
 import MultiplyIcon from "@/components/icons/Multiply.vue"
 import styles from "./Logs.scss"
-import type { Invocation, RequestKeyInfo, ResponseKeyInfo } from "@/services/types"
+
+type FilterData = {
+  name: string
+  enabled: boolean
+  count: number
+}
+
+type FilterGroup =
+  | string
+  | {
+      name: string
+      filters: string[]
+    }
 
 export default defineComponent({
   name: "LogsView",
@@ -46,16 +70,62 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const filterGroups: FilterGroup[] = [
+      "log",
+      "info",
+      "debug",
+      "warn",
+      "error",
+      {
+        name: "request",
+        filters: ["fetch", "xhr"],
+      },
+    ]
     const state = reactive({
       hiddenIds: {} as Record<string, boolean>,
+      filterToggles: filterGroups.reduce((acc, filter) => {
+        const name = typeof filter === "string" ? filter : filter.name
+        acc[name] = true
+        return acc
+      }, {} as Record<string, boolean>),
+    })
+
+    const visibleEntries = computed(() => {
+      return props.entries.filter((entry) => {
+        if (state.hiddenIds[entry.id]) {
+          return false
+        }
+
+        const filterGroupName = getFilterGroupName(entry.method)
+
+        if (!filterGroupName) {
+          return false
+        }
+
+        return !!state.filterToggles[filterGroupName]
+      })
+    })
+
+    const filters = computed((): FilterData[] => {
+      return filterGroups.map((g) => {
+        const name = typeof g === "string" ? g : g.name
+        const count =
+          typeof g === "string"
+            ? props.entries.filter((entry) => entry.method === g).length
+            : g.filters.reduce((acc, filter) => {
+                return acc + props.entries.filter((entry) => entry.method === filter).length
+              }, 0)
+
+        return {
+          name,
+          count,
+          enabled: state.filterToggles[name],
+        }
+      })
     })
 
     onBeforeMount(() => {
       getStyleInjector().injectStyles(styles)
-    })
-
-    const visibleEntries = computed(() => {
-      return props.entries.filter((entry) => !state.hiddenIds[entry.id])
     })
 
     function renderEntry(inv: Invocation): string {
@@ -89,10 +159,32 @@ export default defineComponent({
       state.hiddenIds[inv.id] = true
     }
 
+    function toggleFilter(name: string): void {
+      state.filterToggles[name] = !state.filterToggles[name]
+    }
+
+    function getFilterGroupName(method: string): string | null {
+      for (const group of filterGroups) {
+        if (typeof group === "string") {
+          if (group === method) {
+            return group
+          }
+        } else {
+          if (group.filters.indexOf(method) !== -1) {
+            return group.name
+          }
+        }
+      }
+
+      return null
+    }
+
     return {
+      filters,
       visibleEntries,
       renderEntry,
       removeEntry,
+      toggleFilter,
     }
   },
 })

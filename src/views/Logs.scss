@@ -1,3 +1,13 @@
+$log-color: #0087BD;
+$info-color: #0087BD;
+$warn-color: #FFA500;
+$error-color: #C40233;
+$debug-color: #969696;
+$request-color: #8000FF;
+$text-color: #fefefe;
+$border-radius: 10px;
+$darken-amount: 10%;
+
 .logs-container {
   margin-right: 1em;
 
@@ -11,38 +21,96 @@
       margin: 0.4em 0;
       background: lightblue;
       border: 2px solid lightseagreen;
-      border-radius: 10px;
-      color: #fefefe;
+      border-radius: $border-radius;
+      color: $text-color;
 
-      $log-color: #0087BD;
-      $warn-color: #FFA500;
-      $error-color: #C40233;
-      $debug-color: #969696;
-
-      &.log, &.info {
+      &.log {
         background: $log-color;
-        border-color: darken($log-color, 10%);
+        border-color: darken($log-color, $darken-amount);
+      }
+
+      &.info {
+        background: $info-color;
+        border-color: darken($info-color, $darken-amount);
       }
 
       &.warn {
         background: $warn-color;
-        border-color: darken($warn-color, 10%);
+        border-color: darken($warn-color, $darken-amount);
       }
 
       &.error {
         background: $error-color;
-        border-color: darken($error-color, 10%);
+        border-color: darken($error-color, $darken-amount);
       }
 
       &.debug {
         background: $debug-color;
-        border-color: darken($debug-color, 10%);
+        border-color: darken($debug-color, $darken-amount);
+      }
+
+      &.fetch, &.xhr {
+        background: $request-color;
+        border-color: darken($request-color, $darken-amount);
       }
 
       .remove-btn {
         position: absolute;
         top: 0.4em;
         right: 0.4em;
+      }
+    }
+  }
+
+  .entry-filter-list {
+    display: flex;
+    flex-direction: row;
+    justify-content: end;
+    margin: 0.4em 0;
+
+    .entry-filter {
+      margin: 0 0.4em;
+      padding: 0.4em;
+      border: 2px solid rgba(0,0,0,0);
+      border-radius: $border-radius;
+      font-weight: bold;
+      color: $text-color;
+      text-transform: capitalize;
+      cursor: pointer;
+
+      &.disabled {
+        opacity: 0.4;
+        text-decoration: line-through;
+      }
+
+      &.log {
+        background: $log-color;
+        border-color: darken($log-color, $darken-amount);
+      }
+
+      &.info {
+        background: $info-color;
+        border-color: darken($info-color, $darken-amount);
+      }
+
+      &.warn {
+        background: $warn-color;
+        border-color: darken($warn-color, $darken-amount);
+      }
+
+      &.error {
+        background: $error-color;
+        border-color: darken($error-color, $darken-amount);
+      }
+
+      &.debug {
+        background: $debug-color;
+        border-color: darken($debug-color, $darken-amount);
+      }
+
+      &.request {
+        background: $request-color;
+        border-color: darken($request-color, $darken-amount);
       }
     }
   }
