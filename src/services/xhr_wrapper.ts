@@ -76,7 +76,7 @@ export class XMLHttpRequestWrapper {
   }
 
   private listenToXHR(xhr: XMLHttpRequest, async: boolean) {
-    const handler = () => {
+    const handler = async () => {
       if (xhr.readyState !== 4) {
         return
       }
@@ -85,7 +85,7 @@ export class XMLHttpRequestWrapper {
       const respInfo: ResponseKeyInfo = {
         code: xhr.status,
         headers: this.parseHeadersString(xhr.getAllResponseHeaders()),
-        body: this.extractResponseBody(xhr),
+        body: await this.extractResponseBody(xhr),
       }
 
       xhrData.response = respInfo
@@ -203,7 +203,7 @@ export class XMLHttpRequestWrapper {
     return data
   }
 
-  private extractResponseBody(xhr: XMLHttpRequest): ResponseContent {
+  private async extractResponseBody(xhr: XMLHttpRequest): Promise<ResponseContent> {
     switch (xhr.responseType) {
       case "text":
 
@@ -219,24 +219,21 @@ export class XMLHttpRequestWrapper {
           value: xhr.response,
         }
 
-      case "blob":
-        return {
-          type: ResponseType.Blob,
-          value: xhr.response,
-        }
-
       case "arraybuffer":
         return {
           type: ResponseType.ArrayBuffer,
           value: xhr.response,
         }
 
+      case "blob":
       case "":
         const ct = (xhr.getResponseHeader("Content-Type") ?? "").toLowerCase()
+        const responseText =
+          xhr.response instanceof Blob ? await xhr.response.text() : `${xhr.response}`
 
         if (/application\/json/.test(ct) || /application\/vnd\.api\+json/.test(ct)) {
           try {
-            const json = JSON.parse(xhr.response)
+            const json = JSON.parse(responseText)
 
             return {
               type: ResponseType.JSON,
