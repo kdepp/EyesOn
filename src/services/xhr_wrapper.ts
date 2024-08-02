@@ -121,6 +121,21 @@ export class XMLHttpRequestWrapper {
     return dict
   }
 
+  private parseRequestBody(request: RequestKeyInfo, body: any): any {
+    const ctKey = Object.keys(request.headers).find((k) => k.toLowerCase() === "content-type")
+    const ct = ctKey ? request.headers[ctKey] : ""
+
+    if (/application\/json/.test(ct) && typeof body === "string") {
+      try {
+        return JSON.parse(body)
+      } catch (e) {
+        return body
+      }
+    }
+
+    return body
+  }
+
   private createStubForSend(f: SendFunc): SendFunc {
     const self = this
     const stub: SendFunc = function (...args) {
@@ -128,7 +143,7 @@ export class XMLHttpRequestWrapper {
       const body = args[0]
 
       if (!!xhrData.request && body) {
-        xhrData.request.payload = body
+        xhrData.request.payload = self.parseRequestBody(xhrData.request, body)
       }
 
       const inv: Invocation = {
