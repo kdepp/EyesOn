@@ -1,5 +1,5 @@
 import { createApp, h } from "vue"
-import LogsView from "@/views/Logs.vue"
+import EntriesView from "@/views/Entries.vue"
 import { getStyleInjector } from "@/services/style_injector"
 import resetStyles from "./reset_styles.scss"
 import { State } from "./state"
@@ -8,7 +8,7 @@ export function renderUI(state: State) {
   // IMPORTANT: must wrap LogsView in this new component to keep the fields in state reactive
   const app = createApp({
     render: () =>
-      h(LogsView, {
+      h(EntriesView, {
         entries: state.entries,
         enabled: state.enabled,
       }),

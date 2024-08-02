@@ -39,7 +39,7 @@ import { computed, defineComponent, onBeforeMount, PropType, reactive } from "vu
 import { getStyleInjector } from "@/services/style_injector"
 import type { Invocation, RequestKeyInfo, ResponseKeyInfo } from "@/services/types"
 import MultiplyIcon from "@/components/icons/Multiply.vue"
-import styles from "./Logs.scss"
+import styles from "./Entries.scss"
 
 type FilterData = {
   name: string
@@ -194,6 +194,19 @@ export default defineComponent({
       removeEntry,
       toggleFilter,
       enableFilterOnly,
+      exampleJson: {
+        foo: {
+          bar: ["hello", "world"],
+          boom: {
+            hello: true,
+            world: "woooorld",
+            google: {
+              come: 1,
+              on: 2,
+            },
+          },
+        },
+      },
     }
   },
 })
