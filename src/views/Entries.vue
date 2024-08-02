@@ -10,7 +10,11 @@
         :class="item.method"
         class="entry"
       >
-        <div>{{ renderEntry(item) }}</div>
+        <log-entry
+          v-if="isLogEntry(item)"
+          :invocation="item"
+        />
+        <div v-else>{{ renderEntry(item) }}</div>
         <multiply-icon
           size="1em"
           color="#fff"
@@ -39,6 +43,7 @@ import { computed, defineComponent, onBeforeMount, PropType, reactive } from "vu
 import { getStyleInjector } from "@/services/style_injector"
 import type { Invocation, RequestKeyInfo, ResponseKeyInfo } from "@/services/types"
 import MultiplyIcon from "@/components/icons/Multiply.vue"
+import LogEntry from "@/components/LogEntry.vue"
 import styles from "./Entries.scss"
 
 type FilterData = {
@@ -57,6 +62,7 @@ type FilterGroup =
 export default defineComponent({
   name: "LogsView",
   components: {
+    LogEntry,
     MultiplyIcon,
   },
   props: {
@@ -187,6 +193,10 @@ export default defineComponent({
       return null
     }
 
+    function isLogEntry(item: Invocation): boolean {
+      return ["log", "info", "debug", "warn", "error"].indexOf(item.method) !== -1
+    }
+
     return {
       filters,
       visibleEntries,
@@ -194,19 +204,7 @@ export default defineComponent({
       removeEntry,
       toggleFilter,
       enableFilterOnly,
-      exampleJson: {
-        foo: {
-          bar: ["hello", "world"],
-          boom: {
-            hello: true,
-            world: "woooorld",
-            google: {
-              come: 1,
-              on: 2,
-            },
-          },
-        },
-      },
+      isLogEntry,
     }
   },
 })

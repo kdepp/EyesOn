@@ -7,10 +7,10 @@ export type ConsoleAPI = Pick<
   "trace" | "warn" // | "profile" | "profileEnd"
 >
 
-export type Invocation = {
+export type Invocation<ArgsT = any[]> = {
   id: string
   method: keyof ConsoleAPI | "fetch" | "xhr"
-  args: any[]
+  args: ArgsT
 }
 
 export type RequestPayload =
