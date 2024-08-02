@@ -1,0 +1,71 @@
+.http-object {
+  display: flex;
+  flex-direction: row;
+
+  .http-info {
+    flex: 0 0 60px;
+    text-align: center;
+  }
+
+  .tab-wrapper {
+    flex: 1 1 200px;
+    word-break: break-all;
+  }
+}
+
+.tab-wrapper {
+  display: flex;
+  flex-direction: row;
+
+  $border-color: #c0c0c0;
+  $tab-size: 18px;
+
+  .tabs {
+    flex-grow: 0;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    margin-right: 20px;
+
+    &, & * {
+      box-sizing: border-box;
+    }
+
+    .tab {
+      flex-grow: 0;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: $tab-size;
+      height: $tab-size;
+
+      border-right: 1px solid $border-color;
+      cursor: pointer;
+
+      & > * {
+        opacity: 0.5;
+      }
+
+      &.active {
+        border: 1px solid $border-color;
+        border-right-color: transparent;
+
+        & > * {
+          opacity: 1;
+        }
+      }
+    }
+
+    &::after {
+      content: "";
+      display: block;
+      flex-grow: 1;
+      border-right: 1px solid $border-color;
+    }
+  }
+
+  .tab-content {
+    flex-grow: 1;
+  }
+}

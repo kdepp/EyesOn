@@ -4,11 +4,10 @@
     :width="size"
     :height="size"
     :style="styles"
-    viewBox="-3.5 0 19 19"
+    viewBox="0 0 10 10"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <path
-      d="M11.383 13.644A1.03 1.03 0 0 1 9.928 15.1L6 11.172 2.072 15.1a1.03 1.03 0 1 1-1.455-1.456l3.928-3.928L.617 5.79a1.03 1.03 0 1 1 1.455-1.456L6 8.261l3.928-3.928a1.03 1.03 0 0 1 1.455 1.456L7.455 9.716z" />
+    <path d="M0 0v1c.55 0 1 .45 1 1v4c0 .55-.45 1-1 1v1h5.5c1.38 0 2.5-1.12 2.5-2.5 0-1-.59-1.85-1.44-2.25.27-.34.44-.78.44-1.25 0-1.1-.89-2-2-2h-5zm3 1h1c.55 0 1 .45 1 1s-.45 1-1 1h-1v-2zm0 3h1.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-1.5v-3z" />
   </svg>
 </template>
 
@@ -16,7 +15,7 @@
 import { computed, defineComponent } from "vue"
 
 export default defineComponent({
-  name: "MultiplyIcon",
+  name: "LinkIcon",
   props: {
     size: {
       type: String,

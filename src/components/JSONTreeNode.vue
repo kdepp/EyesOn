@@ -10,10 +10,10 @@
       :size="triangleSize"
     />
     <template v-if="!node.root">
-      <span :style="{ fontStyle: 'italic', fontWeight: 'bold' }">{{ node.key }}</span>
-      <span>:&nbsp;</span>
+      <span :style="{ fontStyle: 'italic', fontWeight: 'bold', wordBreak: 'normal' }">{{ node.key }}</span>
+      <span>:&nbsp;&nbsp;</span>
     </template>
-    <span>{{ describeJson(node.value) }}</span>
+    <span :style="{ opacity: 0.8 }">{{ describeJson(node.value) }}</span>
   </div>
 </template>
 
@@ -25,7 +25,7 @@ import { getChildrenOfNode, describeJson } from "../common/json_node"
 import TriangleRight from "./icons/TriangleRight.vue"
 
 export default defineComponent({
-  name: "DumbNode",
+  name: "JSONTreeNode",
   components: {
     TriangleRight,
   },
@@ -64,6 +64,7 @@ export default defineComponent({
     })
     const triangleStyle = computed(() => {
       return {
+        flexShrink: 0,
         opacity: 0.5,
         cursor: "pointer",
         transition: "transform 0.3s",
