@@ -3,7 +3,23 @@
     <div class="http-method http-info">
       {{ request.method }}
     </div>
-    <div class="tab-wrapper">
+    <div>
+      <div class="http-info-row http-request-url">
+        {{ request.url }}
+      </div>
+      <div v-if="hasAnyHeader" class="http-info-row http-request-headers">
+        <span class="data-label">Headers:</span>
+        <json-tree :json="request.headers" />
+      </div>
+      <div v-if="hasAnyPayload" class="http-info-row http-request-payload">
+        <span class="data-label">Payload:</span>
+        <json-tree
+          v-if="request.payload"
+          :json="request.payload"
+        />
+      </div>
+    </div>
+    <!-- <div class="tab-wrapper">
       <div class="tabs">
         <div
           :class="{ active: selectedTab === 'link' }"
@@ -42,15 +58,15 @@
           <span v-else>(empty)</span>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onBeforeMount, PropType, reactive, toRefs } from "vue"
-import HIcon from "./icons/H.vue"
-import BIcon from "./icons/B.vue"
-import LinkIcon from "./icons/Link.vue"
+import { computed, defineComponent, onBeforeMount, PropType, reactive, toRefs } from "vue"
+// import HIcon from "./icons/H.vue"
+// import BIcon from "./icons/B.vue"
+// import LinkIcon from "./icons/Link.vue"
 import { RequestKeyInfo } from "@/services/types"
 import JsonTree from "./JSONTree.vue"
 import { getStyleInjector } from "@/services/style_injector"
@@ -59,9 +75,9 @@ import tabStyles from "./Tabs.scss"
 export default defineComponent({
   name: "Request",
   components: {
-    HIcon,
-    BIcon,
-    LinkIcon,
+    // HIcon,
+    // BIcon,
+    // LinkIcon,
     JsonTree,
   },
   props: {
@@ -70,11 +86,19 @@ export default defineComponent({
       required: true,
     },
   },
-  setup() {
+  setup(props) {
     const state = reactive({
       selectedTab: "link",
       iconColor: "#fff",
       iconSize: "10px",
+    })
+
+    const hasAnyHeader = computed((): boolean => {
+      return Object.keys(props.request.headers).length > 0
+    })
+
+    const hasAnyPayload = computed((): boolean => {
+      return !!props.request.payload
     })
 
     onBeforeMount(() => {
@@ -88,6 +112,8 @@ export default defineComponent({
     return {
       ...toRefs(state),
       selectTab,
+      hasAnyHeader,
+      hasAnyPayload,
     }
   },
 })

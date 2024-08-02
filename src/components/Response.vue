@@ -3,7 +3,20 @@
     <div class="http-status-code http-info">
       {{ statusCode }}
     </div>
-    <div v-if="!!response" class="tab-wrapper">
+    <div v-if="!!response">
+      <div v-if="hasAnyHeader" class="http-info-row http-response-headers">
+        <span class="data-label">Headers:</span>
+        <json-tree :json="response.headers" />
+      </div>
+      <div v-if="hasAnyBody" class="http-info-row http-response-body">
+        <span class="data-label">Response:</span>
+        <json-tree
+          v-if="response?.body?.value"
+          :json="response.body.value"
+        />
+      </div>
+    </div>
+    <!-- <div v-if="!!response" class="tab-wrapper">
       <div class="tabs">
         <div
           :class="{ active: selectedTab === 'header' }"
@@ -35,7 +48,7 @@
           <span v-else>({{ response.body ? response.body.type : "empty" }})</span>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -75,6 +88,12 @@ export default defineComponent({
     const statusCode = computed(() => {
       return props.response?.code ?? "??"
     })
+    const hasAnyHeader = computed(() => {
+      return Object.keys(props.response?.headers ?? {}).length > 0
+    })
+    const hasAnyBody = computed(() => {
+      return !!props.response?.body
+    })
 
     onBeforeMount(() => {
       getStyleInjector().injectStyles(tabStyles)
@@ -88,6 +107,8 @@ export default defineComponent({
       ...toRefs(state),
       selectTab,
       statusCode,
+      hasAnyHeader,
+      hasAnyBody,
     }
   },
 })
