@@ -3,12 +3,17 @@
     v-if="enabled"
     class="logs-container"
   >
-    <div class="entry-list">
+    <div
+      ref="listRef"
+      class="entry-list"
+    >
       <div
         v-for="item in visibleEntries"
         :key="item.id"
         :class="item.method"
         class="entry"
+        @mousemove="stopAutoScroll()"
+        @mouseleave="startAutoScroll()"
       >
         <log-entry
           v-if="isLogEntry(item)"
@@ -43,7 +48,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onBeforeMount, PropType, reactive } from "vue"
+import { computed, defineComponent, onBeforeMount, PropType, reactive, ref, watch } from "vue"
 import { getStyleInjector } from "@/services/style_injector"
 import type { Invocation, RequestKeyInfo, ResponseKeyInfo } from "@/services/types"
 import MultiplyIcon from "@/components/icons/Multiply.vue"
@@ -82,6 +87,7 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const listRef = ref<HTMLElement | null>(null)
     const filterGroups: FilterGroup[] = [
       {
         name: "log",
@@ -102,8 +108,8 @@ export default defineComponent({
         acc[name] = true
         return acc
       }, {} as Record<string, boolean>),
+      shouldAutoScroll: true,
     })
-
     const visibleEntries = computed(() => {
       return props.entries.filter((entry) => {
         if (state.hiddenIds[entry.id]) {
@@ -119,7 +125,6 @@ export default defineComponent({
         return !!state.filterToggles[filterGroupName]
       })
     })
-
     const filters = computed((): FilterData[] => {
       return filterGroups.map((g) => {
         const name = typeof g === "string" ? g : g.name
@@ -141,6 +146,28 @@ export default defineComponent({
     onBeforeMount(() => {
       getStyleInjector().injectStyles(styles)
     })
+
+    watch(
+      () => visibleEntries.value,
+      () => {
+        if (!state.shouldAutoScroll) {
+          return
+        }
+
+        const list = listRef.value
+
+        if (!list) {
+          return
+        }
+
+        setTimeout(() => {
+          list.scrollTo({
+            top: list.scrollHeight * 2,
+            behavior: "smooth",
+          })
+        }, 200)
+      }
+    )
 
     function renderEntry(inv: Invocation): string {
       switch (inv.method) {
@@ -207,7 +234,16 @@ export default defineComponent({
       return ["xhr", "fetch"].indexOf(item.method) !== -1
     }
 
+    function startAutoScroll() {
+      state.shouldAutoScroll = true
+    }
+
+    function stopAutoScroll() {
+      state.shouldAutoScroll = false
+    }
+
     return {
+      listRef,
       filters,
       visibleEntries,
       renderEntry,
@@ -216,6 +252,8 @@ export default defineComponent({
       enableFilterOnly,
       isLogEntry,
       isRequestEntry,
+      startAutoScroll,
+      stopAutoScroll,
     }
   },
 })
