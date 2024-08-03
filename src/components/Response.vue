@@ -16,56 +16,19 @@
         />
       </div>
     </div>
-    <!-- <div v-if="!!response" class="tab-wrapper">
-      <div class="tabs">
-        <div
-          :class="{ active: selectedTab === 'header' }"
-          class="tab"
-          @click="selectTab('header')"
-        >
-          <h-icon :color="iconColor" :size="iconSize" />
-        </div>
-        <div
-          :class="{ active: selectedTab === 'body' }"
-          class="tab"
-          @click="selectTab('body')"
-        >
-          <b-icon :color="iconColor" :size="iconSize" />
-        </div>
-      </div>
-      <div class="tab-content">
-        <div v-if="selectedTab === 'header'">
-          <json-tree :json="response.headers" />
-        </div>
-        <div v-else-if="selectedTab === 'body'">
-          <json-tree
-            v-if="response.body && response.body.type === 'json'"
-            :json="response.body.value"
-          />
-          <span v-else-if="response.body && response.body.type === 'text'">
-            {{ response.body.value }}
-          </span>
-          <span v-else>({{ response.body ? response.body.type : "empty" }})</span>
-        </div>
-      </div>
-    </div> -->
   </div>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent, onBeforeMount, PropType, reactive, toRefs } from "vue"
-import HIcon from "./icons/H.vue"
-import BIcon from "./icons/B.vue"
 import { ResponseKeyInfo } from "@/services/types"
 import JsonTree from "./JSONTree.vue"
 import { getStyleInjector } from "@/services/style_injector"
-import tabStyles from "./Tabs.scss"
+import httpObjectStyles from "./HttpObject.scss"
 
 export default defineComponent({
   name: "Response",
   components: {
-    HIcon,
-    BIcon,
     JsonTree,
   },
   props: {
@@ -96,7 +59,7 @@ export default defineComponent({
     })
 
     onBeforeMount(() => {
-      getStyleInjector().injectStyles(tabStyles)
+      getStyleInjector().injectStyles(httpObjectStyles)
     })
 
     function selectTab(tab: string) {

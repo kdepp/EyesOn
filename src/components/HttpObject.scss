@@ -1,0 +1,29 @@
+.http-object {
+  display: flex;
+  flex-direction: row;
+
+  .http-info {
+    flex: 0 0 60px;
+    text-align: center;
+  }
+
+  .http-info-row {
+    display: flex;
+    flex-direction: row;
+    margin-top: 10px;
+
+    &:nth-child(1) {
+      margin-top: 0;
+    }
+
+    .data-label {
+      flex-shrink: 0;
+      font-weight: bold;
+      font-style: italic;
+    }
+  }
+
+  .http-request-url {
+    word-break: break-all;
+  }
+}
