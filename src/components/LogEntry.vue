@@ -20,7 +20,7 @@
 <script lang="ts">
 import { computed, defineComponent, PropType } from "vue"
 import type { Invocation } from "@/services/types"
-import JsonTree from "@/components/JsonTree.vue"
+import JsonTree from "@/components/JSONTree.vue"
 import { isPlainObject } from "@/common/is_plain_object"
 
 type GroupType = "stringlike" | "json"
