@@ -1,10 +1,10 @@
-import type { Ipc } from "@/services/ipc/ipc_promise"
 import { IPromiseApiSet } from "./types"
 import { onMessage, postMsg } from "@/services/ipc/ipc_postmessage"
 
 type Message = {
   action: string
   payload: any
+  target?: any
 }
 
 type SendMessageFunc<T = any> = (msg: Message) => Promise<T>
@@ -13,15 +13,21 @@ type MessageHandler<T = any, C = any> = (msg: Message, ctx: C) => Promise<T>
 
 type OnMessageFunc<T = any, C = any> = (handler: MessageHandler<T, C>) => void
 
-export function exportBackgroundAPIs(apis: IPromiseApiSet): void {
+enum MessageTarget {
+  Background,
+  Main,
+  Isolated,
+}
+
+export function exposeBackgroundAPIs(apis: IPromiseApiSet): void {
   exposeAPIs(apis, chromeRuntimeOnMessage)
 }
 
-export function exportContentScriptIsolatedAPIs(apis: IPromiseApiSet): void {
+export function exposeContentScriptIsolatedAPIs(apis: IPromiseApiSet): void {
   exposeAPIs(apis, chromeRuntimeOnMessage)
 }
 
-export function exportContentScriptMainAPIs(apis: IPromiseApiSet, win: Window = self): void {
+export function exposeContentScriptMainAPIs(apis: IPromiseApiSet, win: Window = self): void {
   exposeAPIs(apis, onPostMessage(win))
 }
 
@@ -41,13 +47,34 @@ export function contentScriptAPIsForBackground<T extends IPromiseApiSet>(tabId: 
   return proxiedAPIs((msg: Message) => chrome.tabs.sendMessage(tabId, msg))
 }
 
+export function tunnelBackgroundToContentScriptMain(): void {
+  setupDirectedTunnel(
+    () => true,
+    chromeRuntimeOnMessage,
+    (msg: Message) => {
+      msg.target = MessageTarget.Main
+      return postMsg(window, window, msg, "*")
+    }
+  )
+}
+
+export function tunnelContentScriptMainToBackground(): void {
+  setupDirectedTunnel(
+    (msg: Message) => msg.target !== MessageTarget.Main,
+    onPostMessage(window),
+    (msg: Message) => {
+      return chrome.runtime.sendMessage(msg)
+    }
+  )
+}
+
 export function setupDirectedTunnel(
-  excluder: (msg: Message) => boolean,
+  includer: (msg: Message) => boolean,
   onMessage: OnMessageFunc,
   sendMessage: SendMessageFunc,
 ): void {
   onMessage((msg: Message) => {
-    if (excluder(msg)) {
+    if (!includer(msg)) {
       return
     }
 
@@ -69,19 +96,22 @@ function exposeAPIs<C = any>(apis: IPromiseApiSet, onMessage: OnMessageFunc<any,
   })
 }
 
-type ChromeRuntimeOnMessageContext = {
-  url: string | null
-  sender: chrome.runtime.MessageSender
-}
+type ChromeRuntimeOnMessageContext = chrome.runtime.MessageSender
 
 function chromeRuntimeOnMessage(handler: MessageHandler<any, ChromeRuntimeOnMessageContext>): void {
   chrome.runtime.onMessage.addListener((msg: Message, sender, sendResponse) => {
     new Promise((resolve, reject) => {
-      const url = sender.tab?.url
-      handler(msg, { url, sender }).then(resolve, reject)
-    }).then(sendResponse, (err: Error) => {
-      sendResponse({ __error: err })
-    })
+      handler(msg, sender).then(resolve, reject)
+    }).then(
+      (result) => {
+        if (result !== undefined) {
+          sendResponse(result)
+        }
+      },
+      (err: Error) => {
+        sendResponse({ __error: err })
+      }
+    )
 
     return true
   })
@@ -93,9 +123,8 @@ type PostMessageContext = {
 
 function onPostMessage(from: Window): OnMessageFunc {
   return (handler: MessageHandler<any, PostMessageContext>): void => {
-    onMessage(window, (msg: Message, ctx: PostMessageContext) => {
-      // avoid sending undefined back, as onMessage ignores undefined
-      return Promise.resolve(handler(msg, ctx)).then((res) => res ?? null)
+    onMessage(from, (msg: Message, ctx: PostMessageContext) => {
+      return Promise.resolve(handler(msg, ctx))
     })
   }
 }

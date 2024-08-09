@@ -4,37 +4,63 @@ import { BrowserDetector } from "@/services/browser_detector"
 import { LicenseAPI } from "@/services/license_api"
 import { LicenseManager, LicenseState } from "@/services/license_manager"
 import { SyncStorage } from "@/services/sync_storage"
+import { contentScriptAPIsForBackground } from "../common/api_utils"
 
-export async function checkSiteOption(_: any, url: string | null): Promise<SiteOption | null> {
-  try {
-    const storage = new SiteOptionStorage()
-    return await storage.getSiteOptionForURL(url)
-  } catch (e) {
-    console.error("failed when handling getSiteOptionForURL", e)
-    return null
-  }
-}
+export type BackgroundAPIs = typeof backgroundAPIs
 
-export async function checkLicenseState(): Promise<LicenseState | null> {
-  try {
-    const licenseManager = getLicenseManager()
-    return await licenseManager.getLicenseState()
-  } catch (e) {
-    console.error("failed when handling getLicenseState", e)
-    return null
-  }
-}
+export const backgroundAPIs = {
+  repaintInCurrentTab(sender?: chrome.runtime.MessageSender): Promise<null> {
+    // Call content script API after this request is returned
+    // to avoid requests stacking on each other
+    console.log("repaintInCurrentTab, sender", sender)
 
-export function activateLicense(licenseKey: string): Promise<void> {
-  return getLicenseManager().activateLicense(licenseKey)
-}
+    if (sender?.tab?.id) {
+      const csAPIs = contentScriptAPIsForBackground(sender.tab.id)
 
-export function deactivateLicense(): Promise<void> {
-  return getLicenseManager().deactivateLicense()
-}
+      Promise.all([
+        backgroundAPIs.checkSiteOption(sender),
+        backgroundAPIs.checkLicenseState(),
+      ]).then(([siteOption, licenseState]) => {
+        console.log("repaintInCurrentTab, siteOption, licenseState", siteOption, licenseState)
+        return csAPIs.renderAccordingly(licenseState, siteOption)
+      })
+    }
 
-export function verifyExistingLicenseIfShould(): Promise<boolean> {
-  return getLicenseManager().verifyExistingLicenseIfShould()
+    return Promise.resolve(null)
+  },
+  async checkSiteOption(sender?: chrome.runtime.MessageSender): Promise<SiteOption | null> {
+    try {
+      const storage = new SiteOptionStorage()
+      return await storage.getSiteOptionForURL(sender?.tab?.url)
+    } catch (e) {
+      console.error("failed when handling getSiteOptionForURL", e)
+      return null
+    }
+  },
+  async checkLicenseState(): Promise<LicenseState | null> {
+    try {
+      const licenseManager = getLicenseManager()
+      return await licenseManager.getLicenseState()
+    } catch (e) {
+      console.error("failed when handling getLicenseState", e)
+      return null
+    }
+  },
+  activateLicense(licenseKey: string): Promise<null> {
+    return getLicenseManager()
+      .activateLicense(licenseKey)
+      .then(() => null)
+  },
+  deactivateLicense(): Promise<void> {
+    return getLicenseManager()
+      .deactivateLicense()
+      .then(() => null)
+  },
+  verifyExistingLicenseIfShould(): Promise<null> {
+    return getLicenseManager()
+      .verifyExistingLicenseIfShould()
+      .then(() => null)
+  },
 }
 
 function getLicenseManager() {

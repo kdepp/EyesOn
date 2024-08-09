@@ -1,7 +1,7 @@
 import { Ipc } from "./ipc_promise"
 import { createListenerRegistry } from "@/common/registry"
 
-const TYPE = "CS_MSG"
+const TYPE = "POSTMESSAGE_MSG"
 
 export const postMsg = (
   targetWin: Window,
@@ -77,21 +77,22 @@ export const onMessage = (win: Window, fn: OnMessageCallbackFunction): OnMessage
 
       // Note: wrapped with a new Promise to catch any exception during the execution of fn
       new Promise((resolve, reject) => {
-        let ret: any
-
-        try {
-          ret = fn(e.data.payload, {
+        Promise.resolve(
+          fn(e.data.payload, {
             source: e.source,
           })
-        } catch (err) {
-          reject(err)
-        }
-
-        // Note: only resolve if returned value is not undefined. With this, we can have multiple
-        // listeners added to onMessage, and each one takes care of what it really cares
-        if (ret !== undefined) {
-          resolve(ret)
-        }
+        ).then(
+          (res) => {
+            // Note: only resolve if returned value is not undefined. With this, we can have multiple
+            // listeners added to onMessage, and each one takes care of what it really cares
+            if (res !== undefined) {
+              resolve(res)
+            }
+          },
+          (err) => {
+            reject(err)
+          }
+        )
       }).then(
         (res) => {
           e.source.postMessage(
