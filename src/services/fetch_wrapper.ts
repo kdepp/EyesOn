@@ -41,7 +41,7 @@ export class FetchWrapper {
         method: "fetch",
         args: [
           {
-            request: this.extractRequestKeyInfo(...args),
+            request: this.extractRequestKeyInfo(args as any),
           },
         ],
       }
@@ -65,7 +65,7 @@ export class FetchWrapper {
     return stub
   }
 
-  private extractRequestKeyInfo(...args: Parameters<FetchFunc>): RequestKeyInfo {
+  private extractRequestKeyInfo(args: Parameters<FetchFunc>): RequestKeyInfo {
     const [p1, p2] = args
     const info: RequestKeyInfo = {
       url: "",

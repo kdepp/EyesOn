@@ -1,0 +1,123 @@
+import type { Ipc } from "@/services/ipc/ipc_promise"
+import { IPromiseApiSet } from "./types"
+import { onMessage, postMsg } from "@/services/ipc/ipc_postmessage"
+
+type Message = {
+  action: string
+  payload: any
+}
+
+type SendMessageFunc<T = any> = (msg: Message) => Promise<T>
+
+type MessageHandler<T = any, C = any> = (msg: Message, ctx: C) => Promise<T>
+
+type OnMessageFunc<T = any, C = any> = (handler: MessageHandler<T, C>) => void
+
+export function exportBackgroundAPIs(apis: IPromiseApiSet): void {
+  exposeAPIs(apis, chromeRuntimeOnMessage)
+}
+
+export function exportContentScriptIsolatedAPIs(apis: IPromiseApiSet): void {
+  exposeAPIs(apis, chromeRuntimeOnMessage)
+}
+
+export function exportContentScriptMainAPIs(apis: IPromiseApiSet, win: Window = self): void {
+  exposeAPIs(apis, onPostMessage(win))
+}
+
+// call it proxiedAPI as the APIs could comme from both background and content script isolated
+export function proxiedAPIsForContentScriptMain<T extends IPromiseApiSet>(
+  tunnelWindow: Window = self,
+  currentWindow: Window = self
+): T {
+  return proxiedAPIs((msg: Message) => postMsg(tunnelWindow, currentWindow, msg, "*"))
+}
+
+export function backgroundAPIsForContentScriptIsolated<T extends IPromiseApiSet>(): T {
+  return proxiedAPIs((msg: Message) => chrome.runtime.sendMessage(msg))
+}
+
+export function contentScriptAPIsForBackground<T extends IPromiseApiSet>(tabId: number): T {
+  return proxiedAPIs((msg: Message) => chrome.tabs.sendMessage(tabId, msg))
+}
+
+export function setupDirectedTunnel(
+  excluder: (msg: Message) => boolean,
+  onMessage: OnMessageFunc,
+  sendMessage: SendMessageFunc,
+): void {
+  onMessage((msg: Message) => {
+    if (excluder(msg)) {
+      return
+    }
+
+    return sendMessage(msg)
+  })
+}
+
+function exposeAPIs<C = any>(apis: IPromiseApiSet, onMessage: OnMessageFunc<any, C>): void {
+  onMessage((msg: Message, ctx: C) => {
+    const action = msg?.action
+
+    if (!action || !apis[action]) {
+      return
+    }
+
+    const args: any[] = Array.isArray(msg.payload) ? msg.payload : [msg.payload]
+
+    return apis[action](...args, ctx)
+  })
+}
+
+type ChromeRuntimeOnMessageContext = {
+  url: string | null
+  sender: chrome.runtime.MessageSender
+}
+
+function chromeRuntimeOnMessage(handler: MessageHandler<any, ChromeRuntimeOnMessageContext>): void {
+  chrome.runtime.onMessage.addListener((msg: Message, sender, sendResponse) => {
+    new Promise((resolve, reject) => {
+      const url = sender.tab?.url
+      handler(msg, { url, sender }).then(resolve, reject)
+    }).then(sendResponse, (err: Error) => {
+      sendResponse({ __error: err })
+    })
+
+    return true
+  })
+}
+
+type PostMessageContext = {
+  source: any
+}
+
+function onPostMessage(from: Window): OnMessageFunc {
+  return (handler: MessageHandler<any, PostMessageContext>): void => {
+    onMessage(window, (msg: Message, ctx: PostMessageContext) => {
+      // avoid sending undefined back, as onMessage ignores undefined
+      return Promise.resolve(handler(msg, ctx)).then((res) => res ?? null)
+    })
+  }
+}
+
+function proxiedAPIs<T extends IPromiseApiSet>(sendMessage: SendMessageFunc): T {
+  return new Proxy({} as T, {
+    get(_, prop: string | symbol) {
+      return (...args: any[]): Promise<any> => {
+        return new Promise((resolve, reject) => {
+          try {
+            sendMessage({ action: prop.toString(), payload: args }).then((res) => {
+              if (res?.__error) {
+                reject(new Error(res.__error))
+              } else {
+                resolve(res)
+              }
+            }, reject)
+          } catch (e) {
+            reject(e)
+          }
+        })
+      }
+    },
+  })
+}

@@ -1,5 +1,5 @@
 import { ConsoleWrapper } from "@/services/console_wrapper"
-import { renderUI } from "./ui"
+import { renderActivateLicenseUI, renderUI } from "./ui"
 import { Action, AssertMessage } from "../common/types"
 import { State, initState } from "./state"
 import { isDev } from "@/common/env"
@@ -126,11 +126,15 @@ function bindTunnelMessage(state: State) {
 
         break
 
+      case Action.AskForLicenseKey:
+        renderActivateLicenseUI()
+        break
+
       case Action.Tunnel:
         throw new Error("Tunnel message is not expected here")
 
       default:
-        throw new Error(`Unknown action: ${msg.action}`)
+        throw new Error(`Unknown action: ${innerMsg.action}`)
     }
   })
 }

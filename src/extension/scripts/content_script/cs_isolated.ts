@@ -1,6 +1,10 @@
+import { isDev } from "@/common/env"
 import { Action, Message } from "../common/types"
+import { LicenseStatus } from "@/services/license_manager"
 
-console.log("content script isolated initiated")
+if (isDev) {
+  console.log("content script isolated initiated")
+}
 
 init()
 
@@ -29,18 +33,40 @@ function initListeners() {
 }
 
 async function checkSiteOption() {
-  const siteOption = await chrome.runtime.sendMessage({ action: Action.CheckSiteOption })
+  const [siteOption, licenseState] = await Promise.all([
+    chrome.runtime.sendMessage({ action: Action.CheckSiteOption }),
+    chrome.runtime.sendMessage({ action: Action.CheckLicenseState }),
+  ])
 
-  console.log("got siteOption", siteOption)
+  if (isDev) {
+    console.log("got siteOption", siteOption)
+    console.log("got licenseState", licenseState)
+  }
 
   if (!siteOption || siteOption.mode === "off") {
     return
   }
 
+  switch (licenseState.status) {
+    case LicenseStatus.Absent:
+      postTunnelMessage({ action: Action.AskForLicenseKey, payload: null })
+      break
+
+    case LicenseStatus.Invalid:
+      postTunnelMessage({ action: Action.InformInvalidLicenseKey, payload: licenseState })
+      break
+
+    case LicenseStatus.Valid:
+      postTunnelMessage({ action: Action.Toggle, payload: siteOption })
+      break
+  }
+}
+
+function postTunnelMessage(payload: any) {
   window.postMessage(
     {
       action: Action.Tunnel,
-      payload: { action: Action.Toggle, payload: siteOption },
+      payload,
     },
     "*"
   )

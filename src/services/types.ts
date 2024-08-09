@@ -60,3 +60,25 @@ export type ResponseContentTypes = {
   [ResponseType.Blob]: Blob
   [ResponseType.Document]: Document
 }
+
+export interface IStorage {
+  get(): Promise<string | null>
+  set(value: string): Promise<void>
+  remove(): Promise<void>
+}
+
+export interface IBrowserDetector {
+  getDeviceInfo(): DeviceInfo
+}
+
+export type DeviceInfo = {
+  ua: string
+  browser: string
+  version: string
+}
+
+export interface ILicenseAPI {
+  verifyLicenseKey(licenseKey: string, deviceUID: string): Promise<boolean>
+  deactivateLicenseKey(licenseKey: string, deviceUID: string): Promise<void>
+  activateLicenseKey(licenseKey: string, deviceUID: string, deviceInfo: DeviceInfo): Promise<void>
+}
